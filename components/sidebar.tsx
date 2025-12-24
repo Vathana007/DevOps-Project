@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, PlusCircle, History, ChevronLeft, ChevronRight } from "lucide-react"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Home,
+  PlusCircle,
+  History,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
   {
@@ -23,15 +29,15 @@ const menuItems = [
     href: "/history",
     icon: History,
   },
-]
+];
 
 export default function Sidebar() {
-  const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState(false)
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   // Don't show sidebar on login page
   if (pathname === "/login") {
-    return null
+    return null;
   }
 
   return (
@@ -58,15 +64,19 @@ export default function Sidebar() {
             onClick={() => setCollapsed(!collapsed)}
             className={cn("ml-auto", collapsed && "mx-auto")}
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-2">
           {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
@@ -74,14 +84,17 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 transition-colors",
                   "hover:bg-accent hover:text-accent-foreground",
-                  isActive && "bg-primary text-primary-foreground hover:bg-primary/90",
+                  isActive &&
+                    "bg-primary text-primary-foreground hover:bg-primary/90",
                   collapsed && "justify-center"
                 )}
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span className="text-sm font-medium">{item.title}</span>}
+                {!collapsed && (
+                  <span className="text-sm font-medium">{item.title}</span>
+                )}
               </Link>
-            )
+            );
           })}
         </nav>
 
@@ -100,5 +113,5 @@ export default function Sidebar() {
         </div>
       </div>
     </div>
-  )
+  );
 }
