@@ -32,7 +32,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ matrix.node-version }}-${{ github.run_number }}
-          path: coverage/
-      - name: Deploy to Vercel
-        if: github.ref == 'refs/heads/main' && matrix.node-version == '18.x' && success()
-        run: npx vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+          path: coverage
