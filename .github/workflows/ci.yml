@@ -1,0 +1,38 @@
+name: Node.js CI (npm)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint code
+        run: npm run lint
+      - name: Run tests
+        run: npm test
+      - name: Run coverage
+        run: npm run coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.node-version }}-${{ github.run_number }}
+          path: coverage/
+      - name: Deploy to Vercel
+        if: github.ref == 'refs/heads/main' && matrix.node-version == '18.x' && success()
+        run: npx vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
