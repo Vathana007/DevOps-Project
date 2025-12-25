@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = "https://dev-pos-backend-production.up.railway.app";
+const API_BASE_URL = "https://dev-pos-backend-production.up.railway.app/api"
 const AUTH_BASE_URL = "https://dev-authentication-production.up.railway.app";
 
 export interface Product {
