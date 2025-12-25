@@ -9,6 +9,6 @@ const nextConfig = {
   env: {
     PORT: String(process.env.PORT || 3000),
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;

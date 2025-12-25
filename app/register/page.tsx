@@ -39,14 +39,14 @@ export default function RegisterPage() {
 
     try {
       const response = await register({ email, password });
-      
+
       setSuccess(true);
-      
+
       // Store token if provided
       if (response.token) {
         localStorage.setItem("auth_token", response.token);
       }
-      
+
       // Store user info if provided
       if (response.user) {
         localStorage.setItem("user", JSON.stringify(response.user));
@@ -125,8 +125,16 @@ export default function RegisterPage() {
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading || success}>
-              {loading ? "Creating account..." : success ? "Account created!" : "Create account"}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || success}
+            >
+              {loading
+                ? "Creating account..."
+                : success
+                ? "Account created!"
+                : "Create account"}
             </Button>
             <Button type="button" variant="outline" className="w-full" asChild>
               <Link href="/login">Back to Login</Link>

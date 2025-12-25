@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
 interface CheckoutProps {
   total: number;
@@ -9,19 +9,19 @@ interface CheckoutProps {
 }
 
 export default function Checkout({ total, itemCount, onClear }: CheckoutProps) {
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isCompleted, setIsCompleted] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const handleCheckout = async () => {
-    setIsProcessing(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsProcessing(false)
-    setIsCompleted(true)
+    setIsProcessing(true);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setIsProcessing(false);
+    setIsCompleted(true);
     setTimeout(() => {
-      setIsCompleted(false)
-      onClear()
-    }, 2000)
-  }
+      setIsCompleted(false);
+      onClear();
+    }, 2000);
+  };
 
   return (
     <div className="space-y-3">
@@ -53,5 +53,5 @@ export default function Checkout({ total, itemCount, onClear }: CheckoutProps) {
         Clear Cart
       </button>
     </div>
-  )
+  );
 }

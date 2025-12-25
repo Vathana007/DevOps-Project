@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import CartItem from "./cart-item"
-import Checkout from "./checkout"
+import CartItem from "./cart-item";
+import Checkout from "./checkout";
 
 interface CartItemType {
   id: number;
@@ -17,10 +17,21 @@ interface ShoppingCartProps {
   onClear: () => void;
 }
 
-export default function ShoppingCart({ cart, onRemove, onUpdateQuantity, onClear }: ShoppingCartProps) {
-  const subtotal = cart.reduce((sum, item) => sum + (typeof item.price === 'string' ? parseFloat(item.price) : item.price) * item.quantity, 0)
-  const tax = subtotal * 0.1
-  const total = subtotal + tax
+export default function ShoppingCart({
+  cart,
+  onRemove,
+  onUpdateQuantity,
+  onClear,
+}: ShoppingCartProps) {
+  const subtotal = cart.reduce(
+    (sum, item) =>
+      sum +
+      (typeof item.price === "string" ? parseFloat(item.price) : item.price) *
+        item.quantity,
+    0
+  );
+  const tax = subtotal * 0.1;
+  const total = subtotal + tax;
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 h-fit sticky top-6">
@@ -38,7 +49,12 @@ export default function ShoppingCart({ cart, onRemove, onUpdateQuantity, onClear
           </div>
         ) : (
           cart.map((item) => (
-            <CartItem key={item.id} item={item} onRemove={onRemove} onUpdateQuantity={onUpdateQuantity} />
+            <CartItem
+              key={item.id}
+              item={item}
+              onRemove={onRemove}
+              onUpdateQuantity={onUpdateQuantity}
+            />
           ))
         )}
       </div>
@@ -64,5 +80,5 @@ export default function ShoppingCart({ cart, onRemove, onUpdateQuantity, onClear
         </>
       )}
     </div>
-  )
+  );
 }

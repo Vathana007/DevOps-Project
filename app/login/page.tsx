@@ -30,12 +30,12 @@ export default function LoginPage() {
 
     try {
       const response = await login({ email, password });
-      
+
       // Store token if provided
       if (response.token) {
         localStorage.setItem("auth_token", response.token);
       }
-      
+
       // Store user info if provided
       if (response.user) {
         localStorage.setItem("user", JSON.stringify(response.user));

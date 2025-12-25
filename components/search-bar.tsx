@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 interface SearchBarProps {
   value: string;
@@ -29,5 +29,5 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
         />
       </svg>
     </div>
-  )
+  );
 }

@@ -7,7 +7,10 @@ interface ProductCardProps {
   onAddToCart: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+}: ProductCardProps) {
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg hover:border-primary transition-all duration-300 flex flex-col cursor-pointer">
       <div className="relative h-48 w-full bg-secondary overflow-hidden">

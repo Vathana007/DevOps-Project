@@ -124,15 +124,20 @@ export async function getOrders(): Promise<Order[]> {
 }
 
 // Fetch order receipt by order number
-export async function getOrderReceipt(orderNumber: string): Promise<OrderReceipt> {
+export async function getOrderReceipt(
+  orderNumber: string
+): Promise<OrderReceipt> {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/${orderNumber}/receipt`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/orders/${orderNumber}/receipt`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      }
+    );
 
     if (!response.ok) {
       throw new Error(
@@ -165,7 +170,9 @@ export interface AuthResponse {
 }
 
 // Register new user
-export async function register(credentials: AuthCredentials): Promise<AuthResponse> {
+export async function register(
+  credentials: AuthCredentials
+): Promise<AuthResponse> {
   try {
     const response = await fetch(`${AUTH_BASE_URL}/auth/register`, {
       method: "POST",
@@ -178,7 +185,9 @@ export async function register(credentials: AuthCredentials): Promise<AuthRespon
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || `Registration failed: ${response.status}`);
+      throw new Error(
+        data.message || `Registration failed: ${response.status}`
+      );
     }
 
     return data;
@@ -189,7 +198,9 @@ export async function register(credentials: AuthCredentials): Promise<AuthRespon
 }
 
 // Login user
-export async function login(credentials: AuthCredentials): Promise<AuthResponse> {
+export async function login(
+  credentials: AuthCredentials
+): Promise<AuthResponse> {
   try {
     const response = await fetch(`${AUTH_BASE_URL}/auth/login`, {
       method: "POST",
