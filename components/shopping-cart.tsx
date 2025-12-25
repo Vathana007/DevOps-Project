@@ -76,7 +76,15 @@ export default function ShoppingCart({
             </div>
           </div>
 
-          <Checkout total={total} itemCount={cart.length} onClear={onClear} />
+          <Checkout
+            total={total}
+            itemCount={cart.length}
+            onClear={onClear}
+            cartItems={cart.map((item) => ({
+              id: item.id,
+              quantity: item.quantity,
+            }))}
+          />
         </>
       )}
     </div>

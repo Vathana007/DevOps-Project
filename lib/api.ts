@@ -214,6 +214,163 @@ export async function getOrderReceipt(
   }
 }
 
+// Create a new order
+export interface CreateOrderData {
+  customer_name: string;
+  customer_email: string;
+  items: {
+    product_id: number;
+    quantity: number;
+  }[];
+  tax: number;
+}
+
+export interface CreateOrderResponse {
+  order: Order;
+  receipt: {
+    text: string;
+    items: {
+      product_id: number;
+      name: string;
+      quantity: number;
+      price: string;
+      line_total: string;
+    }[];
+    subtotal: string;
+    tax: string;
+    total: string;
+  };
+}
+
+export async function createOrder(
+  orderData: CreateOrderData
+): Promise<CreateOrderResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message ||
+          `Failed to create order: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error("Error creating order:", error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
+    }
+    throw error;
+  }
+}
+
+// Get order by ID
+export async function getOrderById(id: number): Promise<Order> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch order: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error(`Error fetching order ${id}:`, error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
+    }
+    throw error;
+  }
+}
+
+// Update order status
+export async function updateOrderStatus(
+  id: number,
+  status: string
+): Promise<Order> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message ||
+          `Failed to update order: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error(`Error updating order ${id}:`, error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
+    }
+    throw error;
+  }
+}
+
+// Cancel order
+export async function cancelOrder(id: number): Promise<Order> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/${id}/cancel`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message ||
+          `Failed to cancel order: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error(`Error canceling order ${id}:`, error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
+    }
+    throw error;
+  }
+}
+
 // Authentication interfaces
 export interface AuthCredentials {
   email: string;
