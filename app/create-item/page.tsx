@@ -39,10 +39,10 @@ export default function CreateItemPage() {
     try {
       await createProduct(productData);
       setSuccess(true);
-      
+
       // Reset form
       (event.target as HTMLFormElement).reset();
-      
+
       // Redirect to home page after 1.5 seconds
       setTimeout(() => {
         router.push("/");
@@ -143,11 +143,23 @@ export default function CreateItemPage() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button type="submit" className="flex-1" disabled={loading || success}>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={loading || success}
+                >
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  {loading ? "Creating..." : success ? "Created!" : "Create Product"}
+                  {loading
+                    ? "Creating..."
+                    : success
+                    ? "Created!"
+                    : "Create Product"}
                 </Button>
-                <Button type="reset" variant="outline" disabled={loading || success}>
+                <Button
+                  type="reset"
+                  variant="outline"
+                  disabled={loading || success}
+                >
                   Clear
                 </Button>
               </div>
