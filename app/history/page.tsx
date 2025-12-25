@@ -18,8 +18,14 @@ import {
   DollarSign,
   User,
   ShoppingBag,
+  Eye,
 } from "lucide-react";
-import { getOrders, type Order } from "@/lib/api";
+import {
+  getOrders,
+  getOrderReceipt,
+  type Order,
+  type OrderReceipt,
+} from "@/lib/api";
 
 export default function HistoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,6 +33,10 @@ export default function HistoryPage() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<OrderReceipt | null>(
+    null
+  );
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
 
   // Fetch orders from API
   useEffect(() => {
@@ -47,6 +57,19 @@ export default function HistoryPage() {
 
     fetchOrders();
   }, []);
+
+  const handleViewReceipt = async (orderNumber: string) => {
+    try {
+      setLoadingReceipt(true);
+      const receipt = await getOrderReceipt(orderNumber);
+      setSelectedReceipt(receipt);
+    } catch (err) {
+      console.error("Failed to load receipt:", err);
+      alert("Failed to load receipt. Please try again.");
+    } finally {
+      setLoadingReceipt(false);
+    }
+  };
 
   const handleSearch = () => {
     const filtered = orders.filter(
@@ -190,12 +213,117 @@ export default function HistoryPage() {
                         </span>
                       </div>
                     </div>
+                    <div className="pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewReceipt(order.order_number)}
+                        disabled={loadingReceipt}
+                        className="w-full"
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        {loadingReceipt
+                          ? "Loading..."
+                          : "View Detailed Receipt"}
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             ))
           )}
         </div>
+
+        {/* Receipt Modal */}
+        {selectedReceipt && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setSelectedReceipt(null)}
+          >
+            <Card
+              className="max-w-2xl w-full max-h-[90vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Order Receipt</CardTitle>
+                    <CardDescription>
+                      Order #{selectedReceipt.order_number}
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedReceipt(null)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Customer Info */}
+                <div className="pb-4 border-b">
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">
+                      {selectedReceipt.customer_name}
+                    </span>
+                  </div>
+                  <div className="mt-1">
+                    <Badge className={getStatusColor(selectedReceipt.status)}>
+                      {selectedReceipt.status}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Items */}
+                <div>
+                  <h3 className="font-semibold mb-3">Items</h3>
+                  <div className="space-y-2">
+                    {selectedReceipt.items.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-start p-3 bg-muted/50 rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{item.product_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            ${parseFloat(item.unit_price).toFixed(2)} ×{" "}
+                            {item.quantity}
+                          </p>
+                        </div>
+                        <p className="font-semibold">
+                          ${parseFloat(item.subtotal).toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Totals */}
+                <div className="space-y-2 pt-4 border-t">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal:</span>
+                    <span>
+                      ${parseFloat(selectedReceipt.subtotal).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tax:</span>
+                    <span>${parseFloat(selectedReceipt.tax).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                    <span>Total:</span>
+                    <span className="text-primary">
+                      ${parseFloat(selectedReceipt.total).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Summary Stats */}
         {!loading && !error && (
