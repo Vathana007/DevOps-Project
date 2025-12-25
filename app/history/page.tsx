@@ -270,11 +270,18 @@ export default function HistoryPage() {
                       {selectedReceipt.customer_name}
                     </span>
                   </div>
-                  <div className="mt-1">
-                    <Badge className={getStatusColor(selectedReceipt.status)}>
-                      {selectedReceipt.status}
-                    </Badge>
-                  </div>
+                  {selectedReceipt.customer_email && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {selectedReceipt.customer_email}
+                    </div>
+                  )}
+                  {selectedReceipt.status && (
+                    <div className="mt-2">
+                      <Badge className={getStatusColor(selectedReceipt.status)}>
+                        {selectedReceipt.status}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
 
                 {/* Items */}

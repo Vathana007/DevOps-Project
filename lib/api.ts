@@ -36,6 +36,7 @@ export interface Order {
 export interface OrderReceipt {
   order_number: string;
   customer_name: string;
+  customer_email?: string;
   items: {
     product_name: string;
     quantity: number;
@@ -45,7 +46,8 @@ export interface OrderReceipt {
   subtotal: string;
   tax: string;
   total: string;
-  status: string;
+  status?: string;
+  created_at?: string;
 }
 
 // Fetch all products
