@@ -1,124 +1,87 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import ProductCard from "./product-card"
-import SearchBar from "./search-bar"
+import { useState, useEffect } from "react";
+import ProductCard from "./product-card";
+import SearchBar from "./search-bar";
+import { getProducts, type Product } from "@/lib/api";
 
-const PHONES = [
-  {
-    id: 1,
-    name: "iPhone 15 Pro",
-    brand: "Apple",
-    price: 999,
-    image: "/iphone-15-pro-hands.png",
-    specs: '6.1" Display, 256GB',
-  },
-  {
-    id: 2,
-    name: "Samsung Galaxy S24",
-    brand: "Samsung",
-    price: 899,
-    image: "/samsung-galaxy-s24.jpg",
-    specs: '6.2" Display, 256GB',
-  },
-  {
-    id: 3,
-    name: "Google Pixel 8",
-    brand: "Google",
-    price: 799,
-    image: "/google-pixel-8.png",
-    specs: '6.2" Display, 128GB',
-  },
-  {
-    id: 4,
-    name: "OnePlus 12",
-    brand: "OnePlus",
-    price: 749,
-    image: "/oneplus-12-product-shot.png",
-    specs: '6.7" Display, 256GB',
-  },
-  {
-    id: 5,
-    name: "iPhone 15",
-    brand: "Apple",
-    price: 799,
-    image: "/iphone-15-hands.png",
-    specs: '6.1" Display, 128GB',
-  },
-  {
-    id: 6,
-    name: "Samsung Galaxy A55",
-    brand: "Samsung",
-    price: 449,
-    image: "/samsung-galaxy-a55.png",
-    specs: '6.4" Display, 128GB',
-  },
-  {
-    id: 7,
-    name: "Xiaomi 14",
-    brand: "Xiaomi",
-    price: 599,
-    image: "/xiaomi-14-smartphone.png",
-    specs: '6.4" Display, 256GB',
-  },
-  {
-    id: 8,
-    name: "Realme 12 Pro",
-    brand: "Realme",
-    price: 349,
-    image: "/realme-12-pro.jpg",
-    specs: '6.4" Display, 128GB',
-  },
-]
+interface ProductCatalogProps {
+  onAddToCart: (product: Product) => void;
+}
 
-export default function ProductCatalog({ onAddToCart }) {
-  const [search, setSearch] = useState("")
-  const [selectedBrand, setSelectedBrand] = useState("All")
+export default function ProductCatalog({ onAddToCart }: ProductCatalogProps) {
+  const [search, setSearch] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const brands = ["All", ...new Set(PHONES.map((p) => p.brand))]
+  // Fetch products from API on component mount
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+        setError("Failed to load products. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const filteredPhones = PHONES.filter((phone) => {
+    fetchProducts();
+  }, []);
+
+  // Filter products based on search query
+  const filteredProducts = products.filter((product) => {
     const matchSearch =
-      phone.name.toLowerCase().includes(search.toLowerCase()) ||
-      phone.brand.toLowerCase().includes(search.toLowerCase())
-    const matchBrand = selectedBrand === "All" || phone.brand === selectedBrand
-    return matchSearch && matchBrand
-  })
+      product.name.toLowerCase().includes(search.toLowerCase()) ||
+      product.description.toLowerCase().includes(search.toLowerCase());
+    return matchSearch;
+  });
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-foreground mb-4">Available Phones</h2>
+        <h2 className="text-xl font-bold text-foreground mb-4">
+          Available Products
+        </h2>
         <SearchBar value={search} onChange={setSearch} />
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {brands.map((brand) => (
-          <button
-            key={brand}
-            onClick={() => setSelectedBrand(brand)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedBrand === brand
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border border-border text-foreground hover:border-primary"
-            }`}
-          >
-            {brand}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredPhones.map((phone) => (
-          <ProductCard key={phone.id} product={phone} onAddToCart={onAddToCart} />
-        ))}
-      </div>
-
-      {filteredPhones.length === 0 && (
+      {loading && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">No phones found</p>
+          <p className="text-muted-foreground text-lg">Loading products...</p>
         </div>
       )}
+
+      {error && (
+        <div className="text-center py-12">
+          <p className="text-red-500 text-lg">{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={onAddToCart}
+              />
+            ))}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">No products found</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
-  )
+  );
 }

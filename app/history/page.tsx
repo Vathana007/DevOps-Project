@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -19,64 +19,41 @@ import {
   User,
   ShoppingBag,
 } from "lucide-react";
-
-// Mock order history data
-const mockOrders = [
-  {
-    id: "ORD-001",
-    date: "2025-12-24 10:30 AM",
-    customer: "John Doe",
-    items: [
-      { name: "iPhone 15 Pro", quantity: 1, price: 999 },
-      { name: "AirPods Pro", quantity: 2, price: 249 },
-    ],
-    total: 1497,
-    status: "completed",
-  },
-  {
-    id: "ORD-002",
-    date: "2025-12-24 11:15 AM",
-    customer: "Jane Smith",
-    items: [
-      { name: "Samsung Galaxy S24", quantity: 1, price: 899 },
-      { name: "Phone Case", quantity: 1, price: 29 },
-    ],
-    total: 928,
-    status: "completed",
-  },
-  {
-    id: "ORD-003",
-    date: "2025-12-24 02:45 PM",
-    customer: "Mike Johnson",
-    items: [
-      { name: "Google Pixel 8", quantity: 1, price: 699 },
-      { name: "Screen Protector", quantity: 2, price: 15 },
-    ],
-    total: 729,
-    status: "pending",
-  },
-  {
-    id: "ORD-004",
-    date: "2025-12-23 04:20 PM",
-    customer: "Sarah Williams",
-    items: [
-      { name: "OnePlus 12", quantity: 1, price: 799 },
-      { name: "Wireless Charger", quantity: 1, price: 49 },
-    ],
-    total: 848,
-    status: "completed",
-  },
-];
+import { getOrders, type Order } from "@/lib/api";
 
 export default function HistoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredOrders, setFilteredOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch orders from API
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getOrders();
+        setOrders(data);
+        setFilteredOrders(data);
+      } catch (err) {
+        console.error("Failed to load orders:", err);
+        setError("Failed to load orders. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchOrders();
+  }, []);
 
   const handleSearch = () => {
-    const filtered = mockOrders.filter(
+    const filtered = orders.filter(
       (order) =>
-        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase())
+        order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customer_email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredOrders(filtered);
   };
@@ -128,7 +105,23 @@ export default function HistoryPage() {
 
         {/* Order List */}
         <div className="space-y-4">
-          {filteredOrders.length === 0 ? (
+          {loading && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading orders...</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {error && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <p className="text-red-500">{error}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!loading && !error && filteredOrders.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Receipt className="h-12 w-12 text-muted-foreground mb-2" />
@@ -136,6 +129,8 @@ export default function HistoryPage() {
               </CardContent>
             </Card>
           ) : (
+            !loading &&
+            !error &&
             filteredOrders.map((order) => (
               <Card key={order.id}>
                 <CardHeader>
@@ -143,7 +138,7 @@ export default function HistoryPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-base">
-                          Order #{order.id}
+                          Order #{order.order_number}
                         </CardTitle>
                         <Badge className={getStatusColor(order.status)}>
                           {order.status}
@@ -151,18 +146,17 @@ export default function HistoryPage() {
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {order.date}
-                        </span>
-                        <span className="flex items-center gap-1">
                           <User className="h-3 w-3" />
-                          {order.customer}
+                          {order.customer_name}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary">
-                        ${order.total.toFixed(2)}
+                        ${parseFloat(order.total).toFixed(2)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Tax: ${parseFloat(order.tax).toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -171,7 +165,7 @@ export default function HistoryPage() {
                   <div className="space-y-2">
                     <div className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                       <ShoppingBag className="h-4 w-4" />
-                      Items
+                      Items ({order.items.length})
                     </div>
                     <div className="space-y-1.5">
                       {order.items.map((item, index) => (
@@ -180,16 +174,21 @@ export default function HistoryPage() {
                           className="flex justify-between text-sm"
                         >
                           <span>
-                            {item.name}{" "}
+                            Product ID: {item.product_id}{" "}
                             <span className="text-muted-foreground">
                               ×{item.quantity}
                             </span>
                           </span>
-                          <span className="font-medium">
-                            ${(item.price * item.quantity).toFixed(2)}
-                          </span>
                         </div>
                       ))}
+                    </div>
+                    <div className="pt-2 border-t">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal:</span>
+                        <span className="font-medium">
+                          ${parseFloat(order.subtotal).toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -199,48 +198,52 @@ export default function HistoryPage() {
         </div>
 
         {/* Summary Stats */}
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">
-                  {filteredOrders.length}
+        {!loading && !error && (
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">
+                    {filteredOrders.length}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Total Orders
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Total Orders
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">
-                  $
-                  {filteredOrders
-                    .reduce((sum, order) => sum + order.total, 0)
-                    .toFixed(2)}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">
+                    $
+                    {filteredOrders
+                      .reduce((sum, order) => sum + parseFloat(order.total), 0)
+                      .toFixed(2)}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Total Revenue
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Total Revenue
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary">
-                  {
-                    filteredOrders.filter((o) => o.status === "completed")
-                      .length
-                  }
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">
+                    {
+                      filteredOrders.filter((o) => o.status === "completed")
+                        .length
+                    }
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Completed
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">Completed</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

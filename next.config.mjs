@@ -7,7 +7,7 @@ const nextConfig = {
     unoptimized: true,
   },
   env: {
-    PORT: process.env.PORT || 3000,
+    PORT: String(process.env.PORT || 3000),
   },
 }
 

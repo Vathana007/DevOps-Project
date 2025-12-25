@@ -2,7 +2,13 @@
 
 import { useState } from "react"
 
-export default function Checkout({ total, itemCount, onClear }) {
+interface CheckoutProps {
+  total: number;
+  itemCount: number;
+  onClear: () => void;
+}
+
+export default function Checkout({ total, itemCount, onClear }: CheckoutProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
 

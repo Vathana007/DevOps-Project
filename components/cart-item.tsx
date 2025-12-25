@@ -1,11 +1,26 @@
 "use client"
 
-export default function CartItem({ item, onRemove, onUpdateQuantity }) {
+interface CartItemType {
+  id: number;
+  name: string;
+  price: number | string;
+  quantity: number;
+}
+
+interface CartItemProps {
+  item: CartItemType;
+  onRemove: (id: number) => void;
+  onUpdateQuantity: (id: number, quantity: number) => void;
+}
+
+export default function CartItem({ item, onRemove, onUpdateQuantity }: CartItemProps) {
+  const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+  
   return (
     <div className="flex items-center gap-3 bg-secondary p-3 rounded-lg border border-border">
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm text-foreground truncate">{item.name}</p>
-        <p className="text-xs text-muted-foreground">${item.price.toFixed(2)}</p>
+        <p className="text-xs text-muted-foreground">${price.toFixed(2)}</p>
       </div>
 
       <div className="flex items-center gap-2">

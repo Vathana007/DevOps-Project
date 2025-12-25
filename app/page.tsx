@@ -4,11 +4,16 @@ import { useState } from "react"
 import ProductCatalog from "@/components/product-catalog"
 import ShoppingCart from "@/components/shopping-cart"
 import Header from "@/components/header"
+import { Product } from "@/lib/api"
+
+interface CartItem extends Product {
+  quantity: number;
+}
 
 export default function POSPage() {
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState<CartItem[]>([])
 
-  const addToCart = (product) => {
+  const addToCart = (product: Product) => {
     const existingItem = cart.find((item) => item.id === product.id)
     if (existingItem) {
       setCart(cart.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)))
@@ -17,11 +22,11 @@ export default function POSPage() {
     }
   }
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = (productId: number) => {
     setCart(cart.filter((item) => item.id !== productId))
   }
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = (productId: number, quantity: number) => {
     if (quantity === 0) {
       removeFromCart(productId)
     } else {

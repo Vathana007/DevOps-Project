@@ -3,8 +3,22 @@
 import CartItem from "./cart-item"
 import Checkout from "./checkout"
 
-export default function ShoppingCart({ cart, onRemove, onUpdateQuantity, onClear }) {
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+interface CartItemType {
+  id: number;
+  name: string;
+  price: number | string;
+  quantity: number;
+}
+
+interface ShoppingCartProps {
+  cart: CartItemType[];
+  onRemove: (id: number) => void;
+  onUpdateQuantity: (id: number, quantity: number) => void;
+  onClear: () => void;
+}
+
+export default function ShoppingCart({ cart, onRemove, onUpdateQuantity, onClear }: ShoppingCartProps) {
+  const subtotal = cart.reduce((sum, item) => sum + (typeof item.price === 'string' ? parseFloat(item.price) : item.price) * item.quantity, 0)
   const tax = subtotal * 0.1
   const total = subtotal + tax
 
