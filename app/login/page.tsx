@@ -44,7 +44,21 @@ export default function LoginPage() {
       // Redirect to home page
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "Login failed. Please check your credentials.");
+      console.error("Login error:", err);
+
+      // Check for CORS or network errors
+      if (
+        err.message.includes("Failed to fetch") ||
+        err.message.includes("CORS")
+      ) {
+        setError(
+          "Unable to connect to authentication server. Please contact support or try again later."
+        );
+      } else if (err.message.includes("401") || err.message.includes("403")) {
+        setError("Invalid email or password. Please try again.");
+      } else {
+        setError(err.message || "Login failed. Please check your credentials.");
+      }
     } finally {
       setLoading(false);
     }
@@ -105,7 +119,8 @@ export default function LoginPage() {
               <Link href="/">Back to Home</Link>
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">Do not have an account?{" "}
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            Do not have an account?{" "}
             <Link href="/register" className="text-primary hover:underline">
               Create account
             </Link>

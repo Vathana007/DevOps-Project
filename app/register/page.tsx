@@ -57,7 +57,26 @@ export default function RegisterPage() {
         router.push("/");
       }, 1500);
     } catch (err: any) {
-      setError(err.message || "Registration failed. Please try again.");
+      console.error("Registration error:", err);
+
+      // Check for CORS or network errors
+      if (
+        err.message.includes("Failed to fetch") ||
+        err.message.includes("CORS")
+      ) {
+        setError(
+          "Unable to connect to authentication server. Please contact support or try again later."
+        );
+      } else if (
+        err.message.includes("409") ||
+        err.message.includes("exists")
+      ) {
+        setError(
+          "Email already registered. Please use a different email or try logging in."
+        );
+      } else {
+        setError(err.message || "Registration failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

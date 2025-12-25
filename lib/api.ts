@@ -67,8 +67,11 @@ export async function getProducts(): Promise<Product[]> {
 
     const data = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching products:", error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+    }
     throw error;
   }
 }
@@ -92,8 +95,11 @@ export async function getProductById(id: number): Promise<Product> {
 
     const data = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error fetching product ${id}:`, error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+    }
     throw error;
   }
 }
@@ -117,8 +123,11 @@ export async function getOrders(): Promise<Order[]> {
 
     const data = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching orders:", error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+    }
     throw error;
   }
 }
@@ -147,8 +156,11 @@ export async function getOrderReceipt(
 
     const data = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error fetching receipt for order ${orderNumber}:`, error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+    }
     throw error;
   }
 }
@@ -182,7 +194,15 @@ export async function register(
       body: JSON.stringify(credentials),
     });
 
-    const data = await response.json();
+    // Handle non-JSON responses (like CORS errors)
+    const contentType = response.headers.get("content-type");
+    let data;
+
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      data = { message: "Server returned non-JSON response" };
+    }
 
     if (!response.ok) {
       throw new Error(
@@ -191,8 +211,14 @@ export async function register(
     }
 
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error registering user:", error);
+    // Preserve the original error message for better debugging
+    if (error.message.includes("fetch")) {
+      throw new Error(
+        "Failed to fetch - Please check if the authentication server is accessible"
+      );
+    }
     throw error;
   }
 }
@@ -210,15 +236,29 @@ export async function login(
       body: JSON.stringify(credentials),
     });
 
-    const data = await response.json();
+    // Handle non-JSON responses (like CORS errors)
+    const contentType = response.headers.get("content-type");
+    let data;
+
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      data = { message: "Server returned non-JSON response" };
+    }
 
     if (!response.ok) {
       throw new Error(data.message || `Login failed: ${response.status}`);
     }
 
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error logging in:", error);
+    // Preserve the original error message for better debugging
+    if (error.message.includes("fetch")) {
+      throw new Error(
+        "Failed to fetch - Please check if the authentication server is accessible"
+      );
+    }
     throw error;
   }
 }
