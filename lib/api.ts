@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = "https://dev-pos-backend-production.up.railway.app/api"
+const API_BASE_URL = "https://dev-pos-backend-production.up.railway.app/api";
 const AUTH_BASE_URL = "https://dev-authentication-production.up.railway.app";
 
 export interface Product {
@@ -70,7 +70,9 @@ export async function getProducts(): Promise<Product[]> {
   } catch (error: any) {
     console.error("Error fetching products:", error);
     if (error.message.includes("fetch") || error.name === "TypeError") {
-      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
     }
     throw error;
   }
@@ -98,7 +100,50 @@ export async function getProductById(id: number): Promise<Product> {
   } catch (error: any) {
     console.error(`Error fetching product ${id}:`, error);
     if (error.message.includes("fetch") || error.name === "TypeError") {
-      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
+    }
+    throw error;
+  }
+}
+
+// Create a new product
+export interface CreateProductData {
+  name: string;
+  description: string;
+  price: string;
+  stock: number;
+}
+
+export async function createProduct(
+  productData: CreateProductData
+): Promise<Product> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(productData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message ||
+          `Failed to create product: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error("Error creating product:", error);
+    if (error.message.includes("fetch") || error.name === "TypeError") {
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
     }
     throw error;
   }
@@ -126,7 +171,9 @@ export async function getOrders(): Promise<Order[]> {
   } catch (error: any) {
     console.error("Error fetching orders:", error);
     if (error.message.includes("fetch") || error.name === "TypeError") {
-      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
     }
     throw error;
   }
@@ -159,7 +206,9 @@ export async function getOrderReceipt(
   } catch (error: any) {
     console.error(`Error fetching receipt for order ${orderNumber}:`, error);
     if (error.message.includes("fetch") || error.name === "TypeError") {
-      throw new Error("Unable to connect to server. Please check your connection or contact support.");
+      throw new Error(
+        "Unable to connect to server. Please check your connection or contact support."
+      );
     }
     throw error;
   }

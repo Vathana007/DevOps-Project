@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,19 +14,45 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle, Package2 } from "lucide-react";
+import { createProduct } from "@/lib/api";
 
 export default function CreateItemPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
+    setError(null);
+    setSuccess(false);
 
-    setTimeout(() => {
-      setLoading(false);
-      alert("Item created successfully!");
+    const formData = new FormData(event.currentTarget);
+    const productData = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      price: formData.get("price") as string,
+      stock: parseInt(formData.get("stock") as string, 10),
+    };
+
+    try {
+      await createProduct(productData);
+      setSuccess(true);
+      
+      // Reset form
       (event.target as HTMLFormElement).reset();
-    }, 800);
+      
+      // Redirect to home page after 1.5 seconds
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
+    } catch (err: any) {
+      console.error("Error creating product:", err);
+      setError(err.message || "Failed to create product. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,13 +80,25 @@ export default function CreateItemPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-600 dark:text-red-400">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 rounded-lg bg-green-500/10 border border-green-500/20 p-3 text-sm text-green-600 dark:text-green-400">
+                Product created successfully! Redirecting...
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name *</Label>
                 <Input
                   id="name"
+                  name="name"
                   placeholder="e.g., iPhone 15 Pro Max"
                   required
+                  disabled={loading || success}
                 />
               </div>
 
@@ -68,55 +107,47 @@ export default function CreateItemPage() {
                   <Label htmlFor="price">Price ($) *</Label>
                   <Input
                     id="price"
+                    name="price"
                     type="number"
                     step="0.01"
                     min="0"
                     placeholder="999.99"
                     required
+                    disabled={loading || success}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="stock">Stock Quantity *</Label>
                   <Input
                     id="stock"
+                    name="stock"
                     type="number"
                     min="0"
                     placeholder="100"
                     required
+                    disabled={loading || success}
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
-                <Input id="category" placeholder="e.g., Smartphones" required />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
+                  name="description"
                   placeholder="Enter product description..."
                   rows={4}
                   className="resize-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="image">Image URL</Label>
-                <Input
-                  id="image"
-                  type="url"
-                  placeholder="https://example.com/image.jpg"
+                  disabled={loading || success}
                 />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button type="submit" className="flex-1" disabled={loading}>
+                <Button type="submit" className="flex-1" disabled={loading || success}>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  {loading ? "Creating..." : "Create Product"}
+                  {loading ? "Creating..." : success ? "Created!" : "Create Product"}
                 </Button>
-                <Button type="reset" variant="outline" disabled={loading}>
+                <Button type="reset" variant="outline" disabled={loading || success}>
                   Clear
                 </Button>
               </div>
